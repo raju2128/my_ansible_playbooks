@@ -1,0 +1,31 @@
+---
+- name:  configuring apache2
+  hosts: all
+  tasks:
+   - name: install apache2
+     apt:
+      name: apache2
+      state: present
+      update_cache: yes
+   - name: Edit the index.html file
+     copy:
+      content: "My name is Raju"
+      dest: /var/www/html/index.html
+   - name: restart apache2
+     service:
+      name: apache2
+      state: restarted
+   - name: pause for 1min
+     pause:
+      minutes: 1  
+   - name: check the url response of apache2 on server1
+     uri:
+      url: http://172.31.29.43
+      status_code: 200
+   - name: check the url response of apache2 on server2
+     uri:
+      url: http://172.31.28.4
+      status_code: 200
+... 
+command: ansible-playbook playbook1.yml -b    
+                    

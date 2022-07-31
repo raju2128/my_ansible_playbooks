@@ -1,0 +1,26 @@
+#    loops
+---
+- name: install/uninstall sw's
+  hosts: alls
+  tasks:
+    - name: install sw's
+      apt:
+        name: ["tree","git","maven"]
+        state: present
+        update_cache: no
+... 
+or
+---
+- name: install/uninstall sw's
+  hosts: alls
+  tasks:
+    - name: install sw's
+      apt:
+        name: "{{item}}"
+        state: present
+        update_cache: no
+      with_items:
+        - tree
+        - git  
+        - maven
+...        

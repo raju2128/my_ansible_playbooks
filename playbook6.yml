@@ -1,0 +1,23 @@
+# host scope variables
+modications for groups
+create a folder name with group_vars
+create a file in that folder, the name should be group name in inventry file.
+
+webserver (file in group_vars)
+---
+a: tree
+b: present
+c: no
+...
+
+playbook6.yml
+---
+- name: create host scope variables
+  hosts: webserver
+  tasks:
+    - name: install a tree
+      apt:
+        name: "{{a}}"
+        state: "{{b}}"
+        update_cache: "{{c}}"
+...        

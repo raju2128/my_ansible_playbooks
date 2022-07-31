@@ -1,0 +1,15 @@
+---
+- name: create global scope variable playbook
+  hosts: all
+  tasks:
+    - name: install/uninstall s/w
+      apt:
+        name: "{{a}}"
+        state: "{{b}}"
+        update_cache: "{{c}}"
+    - name: uninstall apache2
+      apt:
+        name: apache2
+        state: absent
+...  
+command: ansible-playbook playbook5.yml --extra-vars "a= b= c= d= e=" -b          

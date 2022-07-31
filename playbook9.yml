@@ -1,0 +1,77 @@
+# loops ====> with_items
+---
+- name: install/uninstall sw's with loops
+  hosts: alls
+  tasks:
+    - name: install sw's
+      apt:
+        name: "{{item.a}}"
+        state: "{{item.b}}"
+        update_cache: "{{item.c}}"
+      with_items:
+        - {a: git,b: present,c: no}
+        - {a: maven,b: present,c: no}  
+        - {a: tree,b: present,c: no}
+...
+
+---
+---
+- name: configure tomcat9
+  hosts: alls
+  tasks:
+    - name:
+      command: ls 
+    - name: install tomcat9
+      apt:
+        name: "{{item.a}}"
+        state: "{{item.b}}"
+        update_cache: "{{item.c}}"
+      with_items:
+        - {a: tomcat9,b: present,c: no}
+        - {a: tomcat9-admin,b: present,c: no}  
+    - name: edit tomcat-users.xml file
+      copy:
+        src: tomcat-users.xml
+        dest: /etc/tomcat9/
+    - name: change the default port number
+      replace:
+        regexp: 8080
+        replace: 9090
+        path: /etc/tomcat9/server.xml
+    - name: restart tomcat9
+      service:
+        name: tomcat9
+        state: restarted
+    - name: pause for 3mins
+      pause:
+        minutes: 2
+    - name: url check on server1
+      uri:
+        url: "{{item}}"
+        status_code: 200
+      with_items:
+        - http://172.31.29.43:9090
+        - http://172.31.28.4:9090  
+...                                    
+command: ansible-playbook playbook2.yml -b
+
+---
+- name: create users and add files into that users home
+  hosts: alls
+  tasks:
+    - name: create users
+      user:
+        name: "{{item.a}}"
+        password: "{{item.b}}"
+        home: "{{item.c}}"
+      with_items:
+        - {a: raju,b: kanna,c: /home/raju}
+        - {a: kanna,b: raju,c: /home/kanna}
+    - name: copy files into that users
+      copy:
+        src: "{{item.a}}"
+        dest: "{{item.b}}"
+      with_items:
+        - {a: /etc/passwd,b: /home/raju}
+        - {a: /etc/group,b: /home/kanna}
+...                

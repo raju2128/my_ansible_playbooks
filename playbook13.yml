@@ -1,0 +1,50 @@
+---
+- name: ci-cd pipeline through ansible
+  hosts: alls
+  tasks:
+    - name: install required softwares
+      apt:
+        name: "{{item.a}}"
+        state: present
+        update_cache: "{{item.c}}"
+      with_items:
+        - {a: openjdk-8-jdk,c: yes}
+        - {a: git,c: no}
+        - {a: maven,c: no}
+        - {a: tomcat9,c: no}
+        - {a: tomcat9-admin,c: no}
+- name: continuous dwonload and build
+  hosts: devserver
+  tasks:
+    - name: download java file from git
+      git:
+        repo: https://github.com/raju2128/maven.git
+        dest: mygit
+    - name: create artifact from the code
+      shell: cd mygit;mvn package
+    - name: copy the artifact from dev-server  
+      fetch:
+        src: mygit/webapp/target/webapp.war
+        dest: /tmp
+- name: continuous deploy into tomcat on qaserver
+  hosts: qaserver
+  tasks:
+    - name: deploy webapp.war file into tomcat9
+      copy:
+        src: /tmp/server3/mygit/webapp/target/webapp.war
+        dest: /var/lib/tomcat9/webapps/testapp.war  
+    - name: download testing file from git
+      git:
+        repo: https://github.com/raju2128/FunctionalTesting.git
+        dest: testapp
+    - name: run the selenium testing file
+      shell: java -jar testapp/testing.jar
+- name: continuous delivery
+  hosts: prodserver
+  tasks:
+    - name: deploy the java file into prod server
+      copy: 
+        src: /tmp/server3/mygit/webapp/target/webapp.war
+        dest: /var/lib/tomcat9/webapps/prodapp.war
+...              
+

@@ -1,0 +1,23 @@
+# host scope variables
+modifications for single node
+create a folder name with host_vars
+create a file in that folder, the name should be ip_address of server(which node we want run) in inventry file.
+
+server1 (file in host_vars)
+---
+a: tree
+b: present
+c: no
+...
+
+playbook7.yml
+---
+- name: create host scope variables
+  hosts: server1
+  tasks:
+    - name: install a tree
+      apt:
+        name: "{{a}}"
+        state: "{{b}}"
+        update_cache: "{{c}}"
+...        

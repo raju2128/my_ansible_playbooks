@@ -1,0 +1,25 @@
+---
+- name: install/uninstall s/w byusing playscope variables
+  hosts: all
+  vars:
+    - a: tomcat9
+    - b: present
+    - c: no
+    - d: tomcat-users.xml
+    - e: /etc/tomcat9/
+    - f: restarted
+    - g: absent
+  tasks:
+    - name: tomcat9 install and uninstall at a time
+      apt:
+        name: "{{a}}"
+        state: "{{b}}"
+        update_cache: "{{c}}"
+      copy:
+        name: "{{d}}"
+        dest: "{{e}}"
+      service:
+        name: "{{a}}"
+        state: "{{f}}"
+...   
+# command: ansible-playbook playbook5.yml -b          

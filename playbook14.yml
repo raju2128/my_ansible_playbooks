@@ -1,0 +1,117 @@
+# child play book
+child1.yml
+---
+- name: install softwares
+  apt:
+    name: ["tree", "git", "maven"]
+    state: present
+    update_cache: no
+...
+
+#call child play book from parent playbook
+---
+- name: call child playbook
+  hosts: all
+  tasks:
+    - name: call child playbook
+      include: child1.yml
+...
+
+# call child play books along with host scope variables
+# configuration tomcat9
+group_vars ---> webervers
+---
+a: tomcat9
+b: present
+c: yes
+d: tomcat9-admin
+e: no
+f: tomcat-users.xml
+g: /etc/tomcat9/
+h: 8080
+i: 9090
+j: /etc/tomcat9/server.xml
+k: restarted
+l: 2
+m: "http://172.31.29.43:9090"
+n: "http://172.31.28.4:9090"
+o: "http://172.31.25.25:9090"
+...
+# install tomcat9 and admin ====> tomcat9-apt.yml
+- name: install tomcat9 and admin
+  apt:
+    name: "{{item.a}}"
+    state: "{{item.b}}"
+    update_cache: "{{item.c}}"
+  with_items:
+    - {a: "{{a}}",b: "{{b}}",c: "{{c}}"}
+    - {a: "{{d}}",b: "{{b}}",c: "{{e}}"}
+# edit tomcat-users.xml file ===> tomcat9-copy.yml
+- name: edit tomcat-users.xml file
+  copy:
+    src: "{{f}}"
+    dest: "{{g}}"
+# change port numbers ====> tomcat9-replace.yml
+- name: chnage port numbers
+  replace:
+    regexp: "{{h}}"
+    replace: "{{i}}"
+    path: "{{j}}"      
+# restart tpmcat9 service ===> tomcat9-service.yml
+- name: restart tomcat9
+  service:
+    name: "{{a}}"
+    state:  "{{k}}" 
+# pause for minute ===> tomcat9-pause.yml
+- name: pause for minute
+  pause:
+    minutes: "{{l}}"        
+# check url response ======> tomcat9-uri.yml
+- name: check url response
+  uri:
+    url: "{{item}}"
+    status_code: 200
+  with_items:
+    - "{{m}}"
+    - "{{n}}"
+    - "{{o}}" 
+
+# t1-apt.yml  t1-copy.yml  t1-pause.yml  t1-replace.yml  t1-restart.yml  t1-uri.yml
+# Parent playbook ====> playbook14.yml
+---
+- name: call all child playbooks
+  hosts: all
+  tasks:
+    - name: call all child playbooks
+      include: "{{item}}"
+      with_items:
+        - t1-apt.yml  
+        - t1-copy.yml  
+        - t1-replace.yml  
+        - t1-restart.yml  
+        - t1-pause.yml  
+        - t1-uri.yml                    
+...  
+# by using handlers
+---
+- name: call all child playbooks
+  hosts: all
+  tasks:
+    - name: call all child playbooks
+      include: "{{item}}"
+      with_items:
+        - t1-apt.yml
+        - t1-copy.yml
+        - t1-replace.yml
+      notify: call handler
+  handlers:
+    - name: call handler
+      include:  "{{item}}"
+      with_items:
+        - t1-restart.yml
+        - t1-pause.yml
+- hosts: all
+  tasks:
+    - name: check url
+      include: t1-uri.yml
+...

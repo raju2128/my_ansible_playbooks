@@ -1,0 +1,16 @@
+#global scope variables
+---
+- name: create users and create files in that tomcat-users.xml
+  hosts: all
+  tasks:
+    - name: create tomcat-users.xml
+      user:
+        name: "{{a}}"
+        password: "{{b}}"
+        home: "{{c}}"
+    - name: create files on users
+      file:
+        name: "{{d}}"
+        state: "{{e}}"
+...
+command: ansible-playbook playbook5.yml --extra-vars "a= b= c= d= e=" -b            

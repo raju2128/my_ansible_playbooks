@@ -1,0 +1,74 @@
+# Handlers: are modules which are executed if parent module is exicuted succesfully and 
+# it is made some modications.
+# handlers are modules that are executed if the modules with notify section executed successfully and it has made some changes
+---
+- name: using handlers
+  hosts: all
+  tasks:
+    - name: install apache2
+      apt:
+        name: apache2
+        state: present
+        update_cache: yes
+    - name: modify index.html file
+      copy:
+        content: "how are you" 
+        dest: /var/www/html/index.html
+      notify: Restart apache2
+  handlers:
+    - name: Restart apache2
+        service:
+        name: apache2
+        state: restarted
+- name: check url
+  hosts: all
+  tasks:
+    - uri:
+        url: "{{item}}"
+        status_code: 200
+      with_items:
+        - http://172.31.28.4
+        - http://172.31.29.43        
+...
+
+---
+- name: configure tomcat9
+  hosts: alls
+  tasks:
+    - name: install tomcat9 and tomcat9-admin
+      apt:
+        name: "{{item.a}}"
+        state: "{{item.b}}"
+        update_cache: "{{item.c}}"
+      with_items:
+        - {a: tomcat9,b: present,c: no}
+        - {a: tomcat9-admin,b: present,c: no}
+      tags: "tomcat9_install"      
+    - name: edit tomcat-users.xml file
+      copy:
+        src: tomcat-users.xml
+        dest: /etc/tomcat9/
+      tags: "edit_file"  
+    - name: change the default port number
+      replace:
+        regexp: 8080
+        replace: 9090
+        path: /etc/tomcat9/server.xml
+      tags: "port_change"  
+      notify: restart tomcat9
+  handlers:      
+    - name: restart tomcat9
+      service:
+        name: tomcat9
+        state: restarted
+- name: check url
+  hosts: alls
+  tasks:
+    - uri:
+        url: "{{item}}"
+        status_code: 200
+      with_items:
+        - http://172.31.28.4:9090
+        - http://172.31.29.43:9090   
+...                                    
+command: ansible-playbook playbook2.yml -b               
